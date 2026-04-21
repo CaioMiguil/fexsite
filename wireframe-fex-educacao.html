@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FEX Educação — Wireframe Premium v2</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #060608; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ═══════════════════════════════════════════════════════════
+   FEX EDUCAÇÃO — WIREFRAME PREMIUM v2
+   Visual Direction: Green Tech / Futuristic / FIAP-level
+   Typography: Montserrat (display + body)
+   ═══════════════════════════════════════════════════════════ */
+
+// ─── DESIGN TOKENS ─────────────────────────────────────
+
+const T = {
+  bg:          "#060608",
+  bgAlt:       "#0c0c10",
+  bgCard:      "#0f0f14",
+  bgCardHover: "#14141a",
+  glass:       "rgba(50, 205, 50, 0.03)",
+  glassBorder: "rgba(50, 205, 50, 0.10)",
+  glassBorderHover: "rgba(50, 205, 50, 0.22)",
+  green:       "#32CD32",
+  greenMid:    "#28a828",
+  greenDim:    "rgba(50, 205, 50, 0.55)",
+  greenGlow:   "rgba(50, 205, 50, 0.12)",
+  greenGlowMd: "rgba(50, 205, 50, 0.20)",
+  greenGlowLg: "rgba(50, 205, 50, 0.30)",
+  white:       "#f5f5f7",
+  gray100:     "#e8e8ec",
+  gray300:     "#a0a0aa",
+  gray500:     "#606068",
+  gray600:     "#44444c",
+  gray700:     "#2a2a32",
+  gray800:     "#1a1a22",
+  gray900:     "#101014",
+  radius:      14,
+  radiusLg:    20,
+  radiusSm:    8,
+};
+
+const FONT_DISPLAY = `'Montserrat', 'SF Pro Display', -apple-system, sans-serif`;
+const FONT_BODY = `'Montserrat', 'SF Pro Text', -apple-system, sans-serif`;
+
+// ─── GLOBAL STYLES (injected once) ─────────────────────
+
+const GlobalStyles = () => {
+  useEffect(() => {
+    if (document.getElementById("fex-global-styles")) return;
+    const style = document.createElement("style");
+    style.id = "fex-global-styles";
+    style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: ${T.bg}; }
+      ::-webkit-scrollbar-thumb { background: ${T.gray700}; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: ${T.gray600}; }
+
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes glowPulse {
+        0%, 100% { box-shadow: 0 0 20px ${T.greenGlow}, 0 4px 16px rgba(0,0,0,0.4); }
+        50%      { box-shadow: 0 0 32px ${T.greenGlowMd}, 0 4px 20px rgba(0,0,0,0.5); }
+      }
+      @keyframes slideProgress {
+        from { width: 0%; }
+        to   { width: 100%; }
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-6px); }
+      }
+      .fex-card {
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .fex-card:hover {
+        transform: translateY(-4px);
+        border-color: ${T.glassBorderHover} !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 24px ${T.greenGlow} !important;
+      }
+      .fex-btn-primary {
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      .fex-btn-primary::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s;
+      }
+      .fex-btn-primary:hover::before { transform: translateX(100%); }
+      .fex-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 36px ${T.greenGlowLg}, 0 8px 24px rgba(0,0,0,0.4) !important;
+      }
+      .fex-btn-secondary {
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .fex-btn-secondary:hover {
+        background: ${T.greenGlow} !important;
+        border-color: ${T.glassBorderHover} !important;
+        transform: translateY(-1px);
+      }
+      .fex-link { transition: color 0.2s; }
+      .fex-link:hover { color: ${T.green} !important; }
+      .fex-nav-item { transition: all 0.25s ease; }
+      .fex-nav-item:hover { color: ${T.white} !important; background: rgba(255,255,255,0.04); }
+      .fex-filter-chip { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+      .fex-filter-chip:hover { border-color: ${T.glassBorderHover} !important; background: ${T.greenGlow} !important; }
+    `;
+    document.head.appendChild(style);
+  }, []);
+  return null;
+};
+
+// ─── SCROLL ANIMATION ──────────────────────────────────
+
+const useScrollReveal = () => {
+  const ref = useRef(null);
+  const [isVisible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, isVisible];
+};
+
+const Reveal = ({ children, delay = 0, style = {} }) => {
+  const [ref, vis] = useScrollReveal();
+  return (
+    <div ref={ref} style={{
+      opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(24px)",
+      transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
+      ...style,
+    }}>{children}</div>
+  );
+};
+
+// ─── GRAIN OVERLAY ─────────────────────────────────────
+
+const GrainOverlay = () => (
+  <div style={{
+    position: "fixed", inset: 0, zIndex: 9999, pointerEvents: "none", opacity: 0.025,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+    backgroundSize: "128px 128px",
+  }} />
+);
+
+// ─── REUSABLE COMPONENTS ───────────────────────────────
+
+const GlowLine = ({ width = 56 }) => (
+  <div style={{ width, height: 3, borderRadius: 2, background: `linear-gradient(90deg, ${T.green}, ${T.greenDim}, transparent)`, boxShadow: `0 0 16px ${T.greenGlow}`, margin: "14px 0 24px" }} />
+);
+
+const Badge = ({ children, color }) => (
+  <span style={{ display: "inline-block", padding: "5px 16px", borderRadius: 24, background: color ? `${color}15` : T.greenGlow, color: color || T.green, fontSize: 10, fontWeight: 700, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: FONT_BODY, border: `1px solid ${color ? `${color}25` : T.glassBorder}` }}>{children}</span>
+);
+
+const SectionLabel = ({ children }) => <div style={{ marginBottom: 8 }}><Badge>{children}</Badge></div>;
+
+const WireframeNote = ({ children, style = {} }) => (
+  <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "4px 12px", borderRadius: 6, background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.08)", fontSize: 10, color: T.gray500, fontStyle: "italic", fontFamily: FONT_BODY, ...style }}>
+    <span style={{ color: T.green, fontSize: 6 }}>◆</span>{children}
+  </div>
+);
+
+const H1 = ({ children, style = {} }) => <h1 style={{ fontFamily: FONT_DISPLAY, color: T.white, fontSize: 52, fontWeight: 800, lineHeight: 1.06, letterSpacing: -2, ...style }}>{children}</h1>;
+const H2 = ({ children, style = {} }) => <h2 style={{ fontFamily: FONT_DISPLAY, color: T.white, fontSize: 34, fontWeight: 700, lineHeight: 1.15, letterSpacing: -1, ...style }}>{children}</h2>;
+const H3 = ({ children, style = {} }) => <h3 style={{ fontFamily: FONT_DISPLAY, color: T.white, fontSize: 20, fontWeight: 700, lineHeight: 1.25, letterSpacing: -0.3, ...style }}>{children}</h3>;
+const Body = ({ children, style = {} }) => <p style={{ fontFamily: FONT_BODY, color: T.gray300, fontSize: 15, lineHeight: 1.75, fontWeight: 400, ...style }}>{children}</p>;
+
+const CTAButton = ({ children, secondary = false }) => (
+  <button className={secondary ? "fex-btn-secondary" : "fex-btn-primary"} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: secondary ? "13px 28px" : "15px 34px", borderRadius: 10, border: secondary ? `1px solid ${T.glassBorder}` : "none", background: secondary ? "transparent" : `linear-gradient(135deg, ${T.green} 0%, ${T.greenMid} 100%)`, color: secondary ? T.green : "#000", fontFamily: FONT_BODY, fontWeight: 700, fontSize: 14, cursor: "pointer", boxShadow: secondary ? "none" : `0 0 24px ${T.greenGlow}, 0 4px 16px rgba(0,0,0,0.3)`, letterSpacing: 0.2 }}>
+    {children}
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </button>
+);
+
+const Card = ({ children, style = {}, className = "" }) => (
+  <div className={`fex-card ${className}`} style={{ background: T.bgCard, borderRadius: T.radiusLg, border: `1px solid ${T.glassBorder}`, padding: 32, boxShadow: `0 2px 24px rgba(0,0,0,0.25)`, position: "relative", ...style }}>{children}</div>
+);
+
+const VideoPlaceholder = ({ label = "Vídeo", large = false }) => (
+  <div style={{ width: "100%", aspectRatio: large ? "16/7.5" : "16/9", borderRadius: T.radiusLg, overflow: "hidden", background: `radial-gradient(ellipse at 50% 40%, ${T.gray800}, ${T.bg})`, border: `1px solid ${T.glassBorder}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", boxShadow: `0 0 40px ${T.greenGlow}, inset 0 1px 0 rgba(255,255,255,0.04)` }}>
+    <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 50%, ${T.greenGlow}, transparent 60%)`, opacity: 0.3 }} />
+    <div style={{ width: 80, height: 80, borderRadius: "50%", background: `rgba(50,205,50,0.08)`, border: `2px solid ${T.green}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 40px ${T.greenGlowMd}`, cursor: "pointer", position: "relative", zIndex: 2, animation: "glowPulse 3s ease-in-out infinite" }}>
+      <svg width="32" height="32" viewBox="0 0 24 24" fill={T.green} style={{ marginLeft: 3 }}><polygon points="5,3 19,12 5,21" /></svg>
+    </div>
+    <span style={{ color: T.gray500, fontSize: 11, marginTop: 14, fontFamily: FONT_BODY, position: "relative", zIndex: 2, letterSpacing: 0.5 }}>{label}</span>
+  </div>
+);
+
+const ImagePlaceholder = ({ label = "Imagem", aspect = "16/9", style = {} }) => (
+  <div style={{ width: "100%", aspectRatio: aspect, borderRadius: T.radiusLg, overflow: "hidden", background: `linear-gradient(145deg, ${T.gray800}, ${T.gray900})`, border: `1px solid rgba(255,255,255,0.05)`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", ...style }}>
+    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "40%", background: `linear-gradient(0deg, ${T.bg}80, transparent)` }} />
+    <div style={{ textAlign: "center", position: "relative", zIndex: 2 }}>
+      <div style={{ width: 48, height: 48, borderRadius: 12, background: T.greenGlow, border: `1px solid ${T.glassBorder}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+      </div>
+      <span style={{ color: T.gray500, fontSize: 10, fontFamily: FONT_BODY, letterSpacing: 0.5 }}>{label}</span>
+    </div>
+  </div>
+);
+
+const SectionDivider = () => <div style={{ width: "100%", padding: "0 40px" }}><div style={{ maxWidth: 1200, margin: "0 auto", height: 1, background: `linear-gradient(90deg, transparent, ${T.glassBorder}, transparent)` }} /></div>;
+const PageContainer = ({ children }) => <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 40px" }}>{children}</div>;
+const SectionWrapper = ({ children, style = {} }) => <section style={{ padding: "80px 0", ...style }}><PageContainer>{children}</PageContainer></section>;
+
+const StepItem = ({ number, text, delay = 0 }) => (
+  <Reveal delay={delay}>
+    <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 24 }}>
+      <div style={{ minWidth: 44, height: 44, borderRadius: 12, background: T.greenGlow, border: `1px solid ${T.glassBorder}`, display: "flex", alignItems: "center", justifyContent: "center", color: T.green, fontWeight: 800, fontSize: 15, fontFamily: FONT_DISPLAY, boxShadow: `0 0 12px ${T.greenGlow}` }}>{String(number).padStart(2, "0")}</div>
+      <span style={{ fontFamily: FONT_BODY, color: T.gray300, fontSize: 15, lineHeight: 1.65, paddingTop: 10 }}>{text}</span>
+    </div>
+  </Reveal>
+);
+
+// ─── NAVBAR ────────────────────────────────────────────
+
+const Navbar = ({ currentPage, setCurrentPage }) => {
+  const [openDrop, setOpenDrop] = useState(null);
+  const dropdowns = {
+    "Para Você": [
+      { label: "Graduação", page: "graduacao", desc: "Formação superior" },
+      { label: "Pós-graduação", page: "pos-graduacao", desc: "Especialização avançada" },
+      { label: "MBA", page: "mba", desc: "Programa executivo" },
+      { label: "Extensão Universitária", page: "extensao", desc: "Formações flexíveis" },
+      { label: "Mentorias", page: "mentorias", desc: "Acompanhamento estratégico" },
+      { label: "MasterFEX", page: "masterfex", desc: "Programa premium" },
+    ],
+    "Para Empresas": [
+      { label: "Universidade Corporativa", page: "universidade-corporativa", desc: "Sistema de desenvolvimento" },
+      { label: "Consultoria Educacional", page: "consultoria", desc: "Estruturação estratégica" },
+    ],
+    "Cursos": [
+      { label: "Todos os Cursos", page: "cursos", desc: "Catálogo completo" },
+      { label: "Graduação", page: "graduacao", desc: "Formação superior" },
+      { label: "Escola de IA", page: "escola-ia", desc: "Pós em IA aplicada" },
+    ],
+  };
+  const navItems = [
+    { label: "A FEX", page: "a-fex" },
+    { label: "Para Você", dropdown: true },
+    { label: "Para Empresas", dropdown: true },
+    { label: "Parceiros & Experts", page: "parceiros" },
+    { label: "Cursos", dropdown: true },
+    { label: "Conteúdos", page: "conteudos" },
+  ];
+
+  return (
+    <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(6,6,8,0.80)", backdropFilter: "blur(24px) saturate(1.4)", borderBottom: `1px solid rgba(255,255,255,0.04)`, padding: "0 40px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68 }}>
+        <div onClick={() => { setCurrentPage("home"); setOpenDrop(null); }} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 9, background: `linear-gradient(135deg, ${T.green}, #1a8a1a)`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: 15, color: "#000", boxShadow: `0 0 20px ${T.greenGlow}` }}>F</div>
+          <span style={{ fontFamily: FONT_DISPLAY, color: T.white, fontWeight: 700, fontSize: 17, letterSpacing: -0.5 }}>FEX <span style={{ color: T.gray500, fontWeight: 400, fontSize: 13, fontFamily: FONT_BODY }}>Educação</span></span>
+        </div>
+        <nav style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {navItems.map(item => (
+            <div key={item.label} style={{ position: "relative" }} onMouseEnter={() => item.dropdown && setOpenDrop(item.label)} onMouseLeave={() => item.dropdown && setOpenDrop(null)}>
+              <div className="fex-nav-item" onClick={() => { if (item.page) { setCurrentPage(item.page); setOpenDrop(null); } }} style={{ padding: "8px 14px", borderRadius: T.radiusSm, cursor: "pointer", color: (item.page === currentPage) ? T.green : T.gray300, fontFamily: FONT_BODY, fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 5, background: openDrop === item.label ? "rgba(255,255,255,0.03)" : "transparent" }}>
+                {item.label}
+                {item.dropdown && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.4, transition: "transform 0.3s", transform: openDrop === item.label ? "rotate(180deg)" : "rotate(0)" }}><polyline points="6 9 12 15 18 9"/></svg>}
+              </div>
+              {item.dropdown && openDrop === item.label && (
+                <div style={{ position: "absolute", top: "calc(100% + 4px)", left: -8, minWidth: 280, padding: 8, background: "rgba(15,15,20,0.95)", backdropFilter: "blur(24px)", borderRadius: T.radius, border: `1px solid ${T.glassBorder}`, boxShadow: `0 16px 48px rgba(0,0,0,0.6), 0 0 32px ${T.greenGlow}`, animation: "fadeIn 0.2s ease" }}>
+                  <div style={{ padding: "8px 14px 12px" }}><span style={{ fontFamily: FONT_BODY, fontSize: 10, color: T.gray500, textTransform: "uppercase", letterSpacing: 2, fontWeight: 700 }}>{item.label === "Para Você" ? "Formações" : item.label === "Para Empresas" ? "Soluções Corporativas" : "Catálogo"}</span></div>
+                  {dropdowns[item.label]?.map((sub, idx) => (
+                    <div key={sub.page + idx} onClick={() => { setCurrentPage(sub.page); setOpenDrop(null); }} className="fex-nav-item" style={{ padding: "11px 14px", borderRadius: T.radiusSm, cursor: "pointer", display: "flex", alignItems: "center", gap: 12, background: currentPage === sub.page ? T.greenGlow : "transparent" }}>
+                      <div style={{ width: 6, height: 6, borderRadius: 3, background: currentPage === sub.page ? T.green : T.gray600, boxShadow: currentPage === sub.page ? `0 0 8px ${T.green}` : "none", transition: "all 0.3s" }} />
+                      <div>
+                        <div style={{ fontFamily: FONT_BODY, color: T.gray100, fontSize: 13, fontWeight: 600 }}>{sub.label}</div>
+                        <div style={{ fontFamily: FONT_BODY, color: T.gray500, fontSize: 11, marginTop: 1 }}>{sub.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+        <button className="fex-btn-secondary" style={{ padding: "9px 22px", borderRadius: T.radiusSm, border: `1px solid ${T.glassBorder}`, background: "transparent", color: T.green, fontFamily: FONT_BODY, fontSize: 13, fontWeight: 700, cursor: "pointer", letterSpacing: 0.3 }}>Entrar</button>
+      </div>
+    </div>
+  );
+};
+
+// ─── FOOTER ────────────────────────────────────────────
+
+const Footer = () => (
+  <footer style={{ background: T.gray900, borderTop: `1px solid rgba(255,255,255,0.04)`, padding: "72px 40px 36px" }}>
+    <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2.2fr 1fr 1fr 1fr", gap: 56, marginBottom: 56 }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 7, background: `linear-gradient(135deg, ${T.green}, #1a8a1a)`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: 13, color: "#000" }}>F</div>
+            <span style={{ fontFamily: FONT_DISPLAY, color: T.white, fontWeight: 700, fontSize: 16 }}>FEX Educação</span>
+          </div>
+          <Body style={{ color: T.gray500, fontSize: 13, maxWidth: 280 }}>A faculdade que conecta credibilidade acadêmica, tecnologia e crescimento educacional.</Body>
+        </div>
+        {[
+          { title: "Institucional", items: ["A FEX", "Parceiros", "Conteúdos", "Blog"] },
+          { title: "Formações", items: ["Pós-graduação", "MBA", "Extensão", "Escola de IA"] },
+          { title: "Acesso", items: ["Área do Aluno", "Área do Parceiro", "Contato", "Redes Sociais"] },
+        ].map(col => (
+          <div key={col.title}>
+            <h4 style={{ fontFamily: FONT_DISPLAY, color: T.gray300, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, marginBottom: 20 }}>{col.title}</h4>
+            {col.items.map(item => <div key={item} className="fex-link" style={{ fontFamily: FONT_BODY, color: T.gray500, fontSize: 13, marginBottom: 12, cursor: "pointer" }}>{item}</div>)}
+          </div>
+        ))}
+      </div>
+      <div style={{ borderTop: `1px solid rgba(255,255,255,0.04)`, paddingTop: 28, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontFamily: FONT_BODY, color: T.gray600, fontSize: 11 }}>© 2025 FEX Educação. Todos os direitos reservados.</span>
+        <div style={{ display: "flex", gap: 20 }}>{["Instagram", "LinkedIn", "YouTube"].map(s => <span key={s} className="fex-link" style={{ fontFamily: FONT_BODY, color: T.gray600, fontSize: 11, cursor: "pointer" }}>{s}</span>)}</div>
+      </div>
+    </div>
+  </footer>
+);
+
+// ─── HERO COMPONENTS ───────────────────────────────────
+
+const HeroSlider = () => {
+  const [slide, setSlide] = useState(0);
+  const slides = [
+    { title: "Transforme conhecimento em crescimento educacional", sub: "Uma nova forma de aprender, ensinar e estruturar educação com mais valor, reconhecimento e escala.", cta: "Conheça a FEX" },
+    { title: "De curso isolado a estrutura educacional completa", sub: "Transforme seu conhecimento em programas, trilhas e formações com mais autoridade e organização.", cta: "Explorar possibilidades" },
+    { title: "Sua empresa com uma universidade corporativa de verdade", sub: "Desenvolva pessoas, fortaleça cultura e transforme conhecimento em performance.", cta: "Ver soluções" },
+    { title: "Aprender IA é só o começo. Aplicar muda tudo.", sub: "Descubra como usar inteligência artificial para escalar negócios e transformar processos.", cta: "Explorar a Escola de IA" },
+  ];
+  useEffect(() => { const t = setInterval(() => setSlide(s => (s + 1) % 4), 6000); return () => clearInterval(t); }, []);
+
+  return (
+    <div style={{ minHeight: 580, display: "flex", alignItems: "center", position: "relative", overflow: "hidden", background: T.bg }}>
+      <div style={{ position: "absolute", top: -180, right: -120, width: 600, height: 600, borderRadius: "50%", background: `radial-gradient(circle, rgba(50,205,50,0.07), transparent 65%)`, filter: "blur(80px)", animation: "float 8s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", bottom: -200, left: -100, width: 400, height: 400, borderRadius: "50%", background: `radial-gradient(circle, rgba(50,205,50,0.04), transparent 65%)`, filter: "blur(60px)", animation: "float 10s ease-in-out infinite 2s" }} />
+      <div style={{ position: "absolute", inset: 0, opacity: 0.03, backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`, backgroundSize: "64px 64px" }} />
+      <PageContainer>
+        <div style={{ maxWidth: 720, position: "relative", zIndex: 2 }}>
+          <WireframeNote style={{ marginBottom: 24 }}>Hero Slider — Slide {slide + 1}/4 · Auto 6s</WireframeNote>
+          <div key={slide} style={{ animation: "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+            <H1 style={{ marginBottom: 24 }}>{slides[slide].title}</H1>
+            <Body style={{ fontSize: 17, marginBottom: 36, maxWidth: 580 }}>{slides[slide].sub}</Body>
+            <CTAButton>{slides[slide].cta}</CTAButton>
+          </div>
+          <div style={{ display: "flex", gap: 6, marginTop: 48, alignItems: "center" }}>
+            {slides.map((_, i) => (
+              <div key={i} onClick={() => setSlide(i)} style={{ width: i === slide ? 40 : 8, height: 4, borderRadius: 2, cursor: "pointer", background: i === slide ? T.green : T.gray700, transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)", boxShadow: i === slide ? `0 0 12px ${T.greenGlowMd}` : "none", position: "relative", overflow: "hidden" }}>
+                {i === slide && <div style={{ position: "absolute", inset: 0, background: T.green, animation: "slideProgress 6s linear" }} />}
+              </div>
+            ))}
+            <span style={{ fontFamily: FONT_BODY, color: T.gray600, fontSize: 11, marginLeft: 12 }}>{String(slide + 1).padStart(2, "0")} / 04</span>
+          </div>
+        </div>
+      </PageContainer>
+    </div>
+  );
+};
+
+const HeroSimple = ({ tag, title, subtitle, cta, ctaSecondary }) => (
+  <div style={{ minHeight: 440, display: "flex", alignItems: "center", background: T.bg, position: "relative", overflow: "hidden" }}>
+    <div style={{ position: "absolute", top: -100, left: "20%", width: 500, height: 500, borderRadius: "50%", background: `radial-gradient(circle, rgba(50,205,50,0.05), transparent 60%)`, filter: "blur(80px)" }} />
+    <div style={{ position: "absolute", inset: 0, opacity: 0.02, backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`, backgroundSize: "64px 64px" }} />
+    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 120, background: `linear-gradient(0deg, ${T.bg}, transparent)` }} />
+    <PageContainer>
+      <div style={{ maxWidth: 720, position: "relative", zIndex: 2, animation: "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+        {tag && <SectionLabel>{tag}</SectionLabel>}
+        <H1 style={{ marginBottom: 20, marginTop: 10, fontSize: 46 }}>{title}</H1>
+        {subtitle && <Body style={{ fontSize: 16, marginBottom: 32, maxWidth: 580 }}>{subtitle}</Body>}
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          {cta && <CTAButton>{cta}</CTAButton>}
+          {ctaSecondary && <CTAButton secondary>{ctaSecondary}</CTAButton>}
+        </div>
+      </div>
+    </PageContainer>
+  </div>
+);
+
+// ─── PAGES ─────────────────────────────────────────────
+
+const PageHome = () => (
+  <>
+    <HeroSlider />
+    <SectionWrapper><Reveal><SectionLabel>Posicionamento</SectionLabel><H2 style={{ marginBottom: 4 }}>Mais do que uma faculdade.</H2><H2><span style={{ color: T.green }}>Um ecossistema de crescimento educacional.</span></H2><GlowLine width={72} /><Body style={{ maxWidth: 700 }}>A FEX Educação conecta credibilidade acadêmica, tecnologia e estrutura para transformar conhecimento em programas educacionais sólidos, negócios escaláveis e soluções corporativas de alto impacto.</Body></Reveal></SectionWrapper>
+    <SectionDivider />
+    <SectionWrapper>
+      <div style={{ display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: 56, alignItems: "center" }}>
+        <Reveal><ImagePlaceholder label="Foto Zora Viana — CEO FEX" aspect="3/4" /></Reveal>
+        <Reveal delay={0.15}><SectionLabel>Liderança</SectionLabel><H2 style={{ fontSize: 30, marginBottom: 4 }}>Zora Viana</H2><GlowLine /><Body style={{ marginBottom: 20 }}>Psicóloga, neuropsicóloga e especialista em negócios educacionais, Zora Viana é a CEO da FEX Educação e uma das principais referências na construção de estruturas educacionais modernas.</Body><Body style={{ color: T.gray500 }}>Sua atuação conecta educação, comportamento e estratégia, ajudando especialistas e empresas a transformarem conhecimento em produtos, trilhas e negócios educacionais com impacto real no mercado.</Body></Reveal>
+      </div>
+    </SectionWrapper>
+    <SectionDivider />
+    <SectionWrapper><Reveal><div style={{ textAlign: "center", marginBottom: 40 }}><SectionLabel>Vídeo Institucional</SectionLabel><H2 style={{ marginTop: 12, fontSize: 30 }}>Entenda a FEX em poucos minutos</H2><Body style={{ color: T.gray500, marginTop: 8 }}>Conheça como a FEX transforma conhecimento em estrutura, crescimento e posicionamento educacional.</Body></div></Reveal><Reveal delay={0.1}><VideoPlaceholder label="Vídeo Trailer Institucional" large /></Reveal></SectionWrapper>
+  </>
+);
+
+const PageAFex = () => (
+  <>
+    <HeroSimple tag="Institucional" title="Uma nova forma de estruturar educação" subtitle="A FEX Educação conecta conhecimento, estrutura acadêmica e tecnologia para transformar ensino em crescimento real." />
+    <SectionWrapper><Reveal><SectionLabel>O que é a FEX</SectionLabel><H2 style={{ fontSize: 32 }}>Mais do que uma faculdade</H2><GlowLine /><Body style={{ maxWidth: 700 }}>A FEX Educação é uma instituição que atua na construção, organização e evolução de estruturas educacionais. Seu papel vai além do ensino tradicional — conecta conhecimento, metodologia e operação para transformar cursos, treinamentos e conteúdos em programas educacionais estruturados.</Body></Reveal></SectionWrapper>
+    <SectionWrapper style={{ background: `linear-gradient(180deg, rgba(50,205,50,0.015), transparent)` }}><Reveal><SectionLabel>Propósito</SectionLabel><H2 style={{ fontSize: 30 }}>Por que a FEX existe</H2><GlowLine /><Body style={{ maxWidth: 640 }}>A educação mudou. O acesso ao conhecimento cresceu. Mas a estrutura ainda não acompanhou essa transformação. A FEX nasce para organizar esse novo cenário — criando pontes entre conhecimento, formação e crescimento.</Body></Reveal></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Como a FEX atua</SectionLabel><H2 style={{ fontSize: 28, marginBottom: 28 }}>Modelo integrado</H2></Reveal><div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>{["Estruturação educacional", "Organização pedagógica", "Operação acadêmica", "Plataforma educacional", "Certificação", "Suporte contínuo"].map((item, i) => <Reveal key={item} delay={i * 0.06}><Card><div style={{ width: 40, height: 40, borderRadius: 10, background: T.greenGlow, border: `1px solid ${T.glassBorder}`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, boxShadow: `0 0 12px ${T.greenGlow}` }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="2"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5"/></svg></div><span style={{ fontFamily: FONT_BODY, color: T.gray100, fontSize: 14, fontWeight: 600 }}>{item}</span></Card></Reveal>)}</div></SectionWrapper>
+    <SectionDivider />
+    <SectionWrapper><div style={{ display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: 56, alignItems: "center" }}><Reveal><ImagePlaceholder label="Foto Zora Viana" aspect="3/4" /></Reveal><Reveal delay={0.15}><SectionLabel>CEO</SectionLabel><H2 style={{ fontSize: 28 }}>Liderança que conecta educação e estratégia</H2><GlowLine /><Body>Zora Viana, CEO da FEX Educação, atua na construção de modelos educacionais modernos, unindo conhecimento, comportamento e estratégia.</Body></Reveal></div></SectionWrapper>
+    <SectionWrapper><Reveal><div style={{ textAlign: "center", marginBottom: 36 }}><SectionLabel>Vídeo Institucional</SectionLabel><H2 style={{ marginTop: 12, fontSize: 28 }}>Entenda a FEX em poucos minutos</H2></div></Reveal><Reveal delay={0.1}><VideoPlaceholder label="Vídeo principal institucional" /></Reveal></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Depoimentos</SectionLabel><H2 style={{ fontSize: 28, marginBottom: 8 }}>Quem constrói com a FEX</H2><WireframeNote style={{ marginBottom: 24 }}>Carrossel de vídeos — Experts, Empresas, Parceiros</WireframeNote></Reveal><div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>{["Expert Parceiro", "Empresa Cliente", "Parceiro FEX"].map((t, i) => <Reveal key={t} delay={i * 0.08}><Card style={{ padding: 0, overflow: "hidden" }}><VideoPlaceholder label={`Depoimento — ${t}`} /></Card></Reveal>)}</div></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Cases</SectionLabel><H2 style={{ fontSize: 28, marginBottom: 28 }}>Resultados que mostram o modelo na prática</H2></Reveal><div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>{[{ title: "De cursos isolados a portfólio estruturado", desc: "Transformação completa da oferta educacional" },{ title: "Empresa que organizou educação interna", desc: "Estrutura contínua de desenvolvimento" },{ title: "Expert que escalou com estrutura", desc: "Crescimento previsível e sustentável" }].map((c, i) => <Reveal key={c.title} delay={i * 0.08}><Card><h4 style={{ fontFamily: FONT_DISPLAY, color: T.green, fontSize: 15, fontWeight: 700, marginBottom: 10, lineHeight: 1.3 }}>{c.title}</h4><Body style={{ color: T.gray500, fontSize: 13 }}>{c.desc}</Body></Card></Reveal>)}</div></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Diferenciais</SectionLabel><H2 style={{ fontSize: 26, marginBottom: 24 }}>O que sustenta esse modelo</H2><div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>{["Estrutura acadêmica e pedagógica", "Integração educação + operação", "Plataforma própria", "Modelo escalável", "Foco em crescimento real"].map(d => <div key={d} style={{ padding: "11px 22px", borderRadius: 100, background: T.greenGlow, border: `1px solid ${T.glassBorder}`, fontFamily: FONT_BODY, color: T.gray100, fontSize: 13, fontWeight: 500 }}>{d}</div>)}</div></Reveal></SectionWrapper>
+    <SectionWrapper style={{ background: `linear-gradient(180deg, rgba(50,205,50,0.02), transparent)` }}><Reveal><SectionLabel>Visão</SectionLabel><H2 style={{ fontSize: 30 }}>O futuro da educação é estruturado</H2><GlowLine /><Body style={{ maxWidth: 600, marginBottom: 36 }}>A tendência não está apenas em aprender mais, mas em organizar melhor o conhecimento. A FEX atua nesse ponto — construindo estruturas que sustentam crescimento, evolução e impacto.</Body><div style={{ display: "flex", gap: 14 }}><CTAButton>Explorar soluções</CTAButton><CTAButton secondary>Falar com a FEX</CTAButton></div></Reveal></SectionWrapper>
+  </>
+);
+
+// ─── FORMAÇÃO TEMPLATE ─────────────────────────────────
+
+const FormacaoPage = ({ tag, heroTitle, heroSub, heroCta, contextTitle, contextText, praticaTitle, praticaText, fexTitle, fexText, steps, audience, ctaTitle, ctaButton }) => (
+  <>
+    <HeroSimple tag={tag} title={heroTitle} subtitle={heroSub} cta={heroCta} />
+    <SectionWrapper><Reveal><SectionLabel>Contexto</SectionLabel><H2 style={{ fontSize: 28 }}>{contextTitle}</H2><GlowLine /><Body style={{ maxWidth: 640 }}>{contextText}</Body></Reveal></SectionWrapper>
+    <SectionWrapper style={{ background: `linear-gradient(180deg, rgba(50,205,50,0.015), transparent)` }}><Reveal><SectionLabel>Na prática</SectionLabel><H2 style={{ fontSize: 26 }}>{praticaTitle}</H2><GlowLine /><Body style={{ maxWidth: 600 }}>{praticaText}</Body></Reveal></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>A FEX</SectionLabel><H2 style={{ fontSize: 26 }}>{fexTitle}</H2><GlowLine /><Body style={{ maxWidth: 600 }}>{fexText}</Body></Reveal></SectionWrapper>
+    <SectionWrapper><Reveal><H2 style={{ fontSize: 26, marginBottom: 28 }}>Como funciona na prática</H2></Reveal>{steps.map((s, i) => <StepItem key={i} number={i + 1} text={s} delay={i * 0.08} />)}</SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Para quem é</SectionLabel><H2 style={{ fontSize: 26, marginBottom: 24 }}>Para quem faz sentido</H2><div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{audience.map((a, i) => <Reveal key={a} delay={i * 0.06}><div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderRadius: T.radius, background: T.greenGlow, border: `1px solid ${T.glassBorder}` }}><div style={{ width: 8, height: 8, borderRadius: 4, background: T.green, boxShadow: `0 0 8px ${T.green}` }} /><span style={{ fontFamily: FONT_BODY, color: T.gray100, fontSize: 14, fontWeight: 500 }}>{a}</span></div></Reveal>)}</div></Reveal></SectionWrapper>
+    <SectionWrapper style={{ textAlign: "center", background: `linear-gradient(180deg, rgba(50,205,50,0.025), transparent)` }}><Reveal><H2 style={{ fontSize: 28, marginBottom: 28 }}>{ctaTitle}</H2><CTAButton>{ctaButton}</CTAButton></Reveal></SectionWrapper>
+  </>
+);
+
+const PagePos = () => <FormacaoPage tag="Pós-graduação" heroTitle="Transforme seu conhecimento em uma pós-graduação" heroSub="Estruture seu método, curso ou mentoria em um programa educacional com mais organização, valor e posicionamento." heroCta="Quero entender como funciona" contextTitle="Você já tem o conteúdo. Falta a estrutura." contextText="Muitos especialistas já possuem conhecimento validado, alunos e resultados. Mas ainda operam com cursos isolados, sem organização pedagógica e com limitações de crescimento." praticaTitle="O que muda quando seu conhecimento vira uma pós-graduação" praticaText="Você deixa de oferecer apenas conteúdos pontuais e passa a ter uma formação estruturada, com começo, meio e evolução clara para o aluno." fexTitle="A FEX estrutura isso com você" fexText="A FEX atua na organização do seu conteúdo, na construção da estrutura pedagógica e na transformação do seu conhecimento em um programa educacional completo." steps={["Analisamos o que você já possui", "Organizamos em uma estrutura educacional", "Construímos o programa", "Implementamos e acompanhamos"]} audience={["Quem já tem curso ou mentoria", "Quem deseja aumentar valor e autoridade", "Quem quer estruturar melhor seu conhecimento"]} ctaTitle="Se você já ensina, você já pode dar o próximo passo" ctaButton="Quero estruturar minha pós-graduação" />;
+const PageMBA = () => <FormacaoPage tag="MBA" heroTitle="Transforme seu conhecimento em um MBA" heroSub="Estruture um programa executivo com mais posicionamento, valor e profundidade." heroCta="Quero entender como funciona" contextTitle="Nem todo conhecimento precisa virar curso. Alguns precisam virar posicionamento." contextText="Se você já possui um método estruturado, experiência consolidada ou atua com públicos mais avançados, existe um próximo nível possível." praticaTitle="O que muda quando seu conhecimento vira um MBA" praticaText="Você deixa de atuar apenas com formações técnicas e passa a construir um programa com foco executivo, mais aprofundado e com maior percepção de valor." fexTitle="A FEX estrutura esse processo com você" fexText="A FEX organiza seu conteúdo dentro de uma lógica executiva, estruturando o programa, a jornada do aluno e a construção pedagógica necessária." steps={["Entendimento do seu posicionamento e público", "Estruturação do programa executivo", "Organização da jornada de aprendizado", "Implementação e acompanhamento"]} audience={["Experts com público mais avançado", "Empresários e mentores", "Quem deseja elevar seu posicionamento"]} ctaTitle="Se o seu conhecimento já evoluiu, seu produto também pode evoluir" ctaButton="Quero estruturar meu MBA" />;
+const PageExtensao = () => <FormacaoPage tag="Extensão Universitária" heroTitle="Transforme seu conhecimento em uma extensão universitária" heroSub="Estruture formações com mais flexibilidade, organização e possibilidade de crescimento." heroCta="Quero entender como funciona" contextTitle="Nem todo conhecimento precisa começar grande" contextText="Muitas vezes, o primeiro passo não é criar um programa completo, mas organizar melhor o que você já ensina." praticaTitle="O que muda quando seu conteúdo vira uma extensão" praticaText="Você sai de conteúdos soltos e passa a ter uma formação organizada, com início, desenvolvimento e entrega bem definidos." fexTitle="A FEX organiza essa estrutura com você" fexText="A FEX ajuda a estruturar seu conteúdo dentro de uma lógica educacional, organizando trilhas, módulos e progressão." steps={["Análise do seu conteúdo atual", "Organização em estrutura educacional", "Definição da formação", "Implementação"]} audience={["Quem quer organizar melhor seus conteúdos", "Quem deseja começar um portfólio educacional", "Quem busca mais consistência na entrega"]} ctaTitle="Todo conhecimento pode ser estruturado" ctaButton="Quero estruturar minha formação" />;
+const PageMentorias = () => <FormacaoPage tag="Mentorias" heroTitle="Desenvolva seu conhecimento com mais direção" heroSub="Mentorias para quem quer organizar, estruturar e evoluir seu conhecimento de forma mais consistente." heroCta="Quero entender como funciona" contextTitle="Nem sempre falta conteúdo. Muitas vezes falta direção." contextText="Você pode já ter conhecimento, experiência ou até produtos em andamento. Mas sem organização e visão estratégica, isso dificilmente evolui." praticaTitle="O que acontece dentro da mentoria" praticaText="A mentoria é um ambiente de acompanhamento e orientação, onde você organiza suas ideias e começa a construir algo mais sólido." fexTitle="A FEX orienta esse processo com você" fexText="A FEX traz direcionamento estratégico e educacional, ajudando você a transformar conhecimento em algo estruturado e aplicável." steps={["Encontros orientados", "Direcionamento estratégico", "Organização do conhecimento", "Evolução progressiva"]} audience={["Quem quer estruturar melhor seu conhecimento", "Quem já começou, mas está desorganizado", "Quem busca clareza antes de escalar"]} ctaTitle="Clareza é o primeiro passo para crescer" ctaButton="Quero participar da mentoria" />;
+
+// ─── B2B PAGES ─────────────────────────────────────────
+
+const CaseCard = ({ name, before, after, delay = 0 }) => (
+  <Reveal delay={delay}><Card><h4 style={{ fontFamily: FONT_DISPLAY, color: T.green, fontSize: 18, fontWeight: 700, marginBottom: 20 }}>{name}</h4><div style={{ padding: "12px 16px", borderRadius: T.radiusSm, background: "rgba(255,68,68,0.04)", border: "1px solid rgba(255,68,68,0.1)", marginBottom: 12 }}><span style={{ fontFamily: FONT_BODY, color: "#ff6666", fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>Antes</span><Body style={{ color: T.gray500, fontSize: 13, marginTop: 4 }}>{before}</Body></div><div style={{ padding: "12px 16px", borderRadius: T.radiusSm, background: T.greenGlow, border: `1px solid ${T.glassBorder}` }}><span style={{ fontFamily: FONT_BODY, color: T.green, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>Depois</span><Body style={{ color: T.gray100, fontSize: 13, marginTop: 4 }}>{after}</Body></div></Card></Reveal>
+);
+
+const PageUniCorp = () => (
+  <>
+    <HeroSimple tag="Para Empresas" title="Sua empresa com uma universidade corporativa estruturada" subtitle="Transforme conhecimento interno em um sistema contínuo de desenvolvimento, alinhado à estratégia do seu negócio." cta="Quero entender como funciona" />
+    <SectionWrapper><Reveal><SectionLabel>O Problema</SectionLabel><H2 style={{ fontSize: 28 }}>O problema não é treinar. É sustentar o desenvolvimento.</H2><GlowLine /><Body style={{ maxWidth: 600, marginBottom: 20 }}>Empresas investem em treinamentos, workshops e capacitações. Mas sem estrutura, o aprendizado se perde com o tempo.</Body><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{["Não há continuidade", "Não existe evolução clara", "O conhecimento não se consolida"].map((p, i) => <Reveal key={p} delay={i * 0.06}><div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", borderRadius: T.radiusSm, background: "rgba(255,68,68,0.03)", border: "1px solid rgba(255,68,68,0.08)" }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff6666" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg><span style={{ fontFamily: FONT_BODY, color: T.gray500, fontSize: 13 }}>{p}</span></div></Reveal>)}</div></Reveal></SectionWrapper>
+    <SectionWrapper style={{ background: `linear-gradient(180deg, rgba(50,205,50,0.015), transparent)` }}><Reveal><SectionLabel>Conceito</SectionLabel><H2 style={{ fontSize: 26 }}>Uma universidade corporativa não é um treinamento</H2><GlowLine /><Body style={{ maxWidth: 600 }}>É um sistema estruturado de desenvolvimento, onde o aprendizado deixa de ser pontual e passa a ser contínuo, organizado e conectado com os objetivos da empresa.</Body></Reveal></SectionWrapper>
+    <SectionWrapper><Reveal><H2 style={{ fontSize: 26, marginBottom: 28 }}>Como funciona na prática</H2></Reveal>{["Diagnóstico da estrutura atual", "Definição das trilhas de desenvolvimento", "Organização dos conteúdos", "Implementação da universidade corporativa", "Acompanhamento e evolução"].map((s, i) => <StepItem key={i} number={i + 1} text={s} delay={i * 0.08} />)}</SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Cases</SectionLabel><H2 style={{ fontSize: 26, marginBottom: 28 }}>Empresas que estruturaram sua educação com a FEX</H2></Reveal><div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}><CaseCard name="VEXILOM" before="Treinamentos desconectados e baixa retenção" after="Trilhas estruturadas e desenvolvimento contínuo" /><CaseCard name="EMBRACON" before="Conhecimento centralizado em poucas pessoas" after="Educação distribuída e escalável" delay={0.08} /></div></SectionWrapper>
+    <SectionWrapper style={{ textAlign: "center", background: `linear-gradient(180deg, rgba(50,205,50,0.025), transparent)` }}><Reveal><H2 style={{ fontSize: 28, marginBottom: 8 }}>Educação estruturada é o que sustenta crescimento</H2><Body style={{ color: T.gray500, marginBottom: 28 }}>Para empresas que querem evoluir sua estrutura.</Body><CTAButton>Quero estruturar minha universidade corporativa</CTAButton></Reveal></SectionWrapper>
+  </>
+);
+
+const PageConsultoria = () => (
+  <>
+    <HeroSimple tag="Para Empresas" title="Estruture a educação da sua empresa com mais estratégia" subtitle="Consultorias educacionais personalizadas para organizar, desenvolver e evoluir o aprendizado dentro da sua empresa." cta="Quero entender como funciona" />
+    <SectionWrapper><Reveal><SectionLabel>O Problema</SectionLabel><H2 style={{ fontSize: 28 }}>Quando a educação não é estruturada, ela não sustenta crescimento</H2><GlowLine /><Body style={{ maxWidth: 600 }}>Muitas empresas já possuem treinamentos, conteúdos e iniciativas internas. Mas, sem uma visão estratégica, esses esforços acabam sendo dispersos e difíceis de sustentar.</Body></Reveal></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>A Consultoria</SectionLabel><H2 style={{ fontSize: 26 }}>Não é sobre criar mais treinamentos. É sobre organizar o que já existe.</H2><GlowLine /><Body style={{ maxWidth: 600 }}>A consultoria educacional da FEX atua na estruturação da educação da sua empresa como um todo, conectando conhecimento, desenvolvimento e estratégia.</Body></Reveal></SectionWrapper>
+    <SectionWrapper><Reveal><H2 style={{ fontSize: 26, marginBottom: 28 }}>Como funciona na prática</H2></Reveal>{["Diagnóstico da estrutura atual", "Identificação de gaps e oportunidades", "Planejamento educacional", "Estruturação das soluções", "Acompanhamento da implementação"].map((s, i) => <StepItem key={i} number={i + 1} text={s} delay={i * 0.08} />)}</SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Cases</SectionLabel><H2 style={{ fontSize: 26, marginBottom: 28 }}>Empresas que evoluíram sua estrutura educacional</H2></Reveal><div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}><CaseCard name="EMBRACON" before="Ações isoladas de treinamento" after="Modelo estruturado de desenvolvimento" /><CaseCard name="VEXILOM" before="Dificuldade em escalar conhecimento" after="Estrutura organizada e contínua" delay={0.08} /></div></SectionWrapper>
+    <SectionWrapper style={{ textAlign: "center", background: `linear-gradient(180deg, rgba(50,205,50,0.025), transparent)` }}><Reveal><H2 style={{ fontSize: 28, marginBottom: 28 }}>Estrutura não nasce pronta. Ela é construída com estratégia.</H2><CTAButton>Quero estruturar a educação da minha empresa</CTAButton></Reveal></SectionWrapper>
+  </>
+);
+
+// ─── PAGE: PARCEIROS ───────────────────────────────────
+
+const PageParceiros = () => {
+  const plans = [
+    { tier: "BRONZE", color: "#cd7f32", label: "Início e Validação", desc: "Para quem está começando", items: ["Entrada no modelo educacional", "Cursos de extensão", "Primeira certificação", "Base inicial de crescimento"] },
+    { tier: "PRATA", color: "#c0c0c0", label: "Estruturação", desc: "Conteúdo validado", items: ["Ampliação de cursos", "Primeira pós-graduação", "Plataforma estruturada", "Mais controle"] },
+    { tier: "OURO", color: "#ffd700", label: "Escala", desc: "Crescimento consistente", items: ["Portfólio ampliado", "Múltiplas pós-graduações", "Estrutura robusta", "Crescimento previsível"] },
+    { tier: "DIAMANTE", color: "#b9f2ff", label: "Consolidação", desc: "Domínio educacional", items: ["Estrutura ilimitada", "Máxima escala", "Posicionamento premium", "Decisão estratégica"] },
+  ];
+  return (
+    <>
+      <HeroSimple tag="Parceiros FEX" title="Construa um negócio educacional com estrutura, certificação e escala" subtitle="A FEX atua junto com você para transformar seu conhecimento em programas educacionais sólidos, com operação completa e crescimento previsível." cta="Quero entender como funciona" />
+      <SectionWrapper><Reveal><SectionLabel>Posicionamento</SectionLabel><H2 style={{ fontSize: 28 }}>Um novo padrão para crescimento no mercado educacional</H2><GlowLine /><Body style={{ maxWidth: 640 }}>A FEX estrutura toda a operação acadêmica, pedagógica e tecnológica, permitindo que você foque no que realmente importa: captação de alunos, posicionamento e crescimento.</Body></Reveal></SectionWrapper>
+      <SectionWrapper><Reveal><H2 style={{ fontSize: 26, marginBottom: 28 }}>Você cria. A FEX estrutura.</H2></Reveal><div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>{["Criar cursos com certificação oficial", "Transformar conteúdos em pós-graduação ou MBA", "Oferecer certificação internacional", "Construir um portfólio educacional completo"].map((item, i) => <Reveal key={item} delay={i * 0.06}><Card><div style={{ display: "flex", alignItems: "center", gap: 14 }}><div style={{ width: 8, height: 8, borderRadius: 4, background: T.green, boxShadow: `0 0 8px ${T.green}` }} /><span style={{ fontFamily: FONT_BODY, color: T.gray100, fontSize: 14, fontWeight: 500 }}>{item}</span></div></Card></Reveal>)}</div></SectionWrapper>
+      <SectionWrapper><Reveal><SectionLabel>O que a FEX faz</SectionLabel><H2 style={{ fontSize: 26, marginBottom: 28 }}>Estrutura completa para o parceiro</H2></Reveal><div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>{["Gestão acadêmica e pedagógica", "Plataforma EAD integrada", "Automação de processos", "Corpo docente estruturado", "Certificação ágil", "Suporte contínuo"].map((s, i) => <Reveal key={s} delay={i * 0.05}><Card style={{ padding: 22 }}><div style={{ width: 8, height: 8, borderRadius: 4, background: T.green, boxShadow: `0 0 8px ${T.green}`, marginBottom: 12 }} /><span style={{ fontFamily: FONT_BODY, color: T.gray100, fontSize: 13, fontWeight: 600 }}>{s}</span></Card></Reveal>)}</div></SectionWrapper>
+      <SectionDivider />
+      <SectionWrapper>
+        <Reveal><div style={{ textAlign: "center", marginBottom: 48 }}><SectionLabel>Planos de Evolução</SectionLabel><H2 style={{ marginTop: 14 }}>Você cresce em níveis</H2><Body style={{ color: T.gray500, marginTop: 10 }}>Evolua seu negócio educacional de forma progressiva.</Body><WireframeNote style={{ marginTop: 14 }}>Visual em evolução — NÃO tabela de preços</WireframeNote></div></Reveal>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+          {plans.map((p, i) => (
+            <Reveal key={p.tier} delay={i * 0.1}><div className="fex-card" style={{ background: T.bgCard, borderRadius: T.radiusLg, padding: 28, border: `1px solid ${i === 3 ? `${p.color}40` : T.glassBorder}`, boxShadow: i === 3 ? `0 0 40px ${p.color}10` : `0 2px 24px rgba(0,0,0,0.25)`, position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${p.color}, ${p.color}60)`, boxShadow: `0 0 16px ${p.color}30` }} />
+              <div style={{ position: "absolute", top: 16, right: 16, fontFamily: FONT_DISPLAY, fontSize: 48, fontWeight: 800, color: `${p.color}08`, lineHeight: 1 }}>{String(i + 1).padStart(2, "0")}</div>
+              <div style={{ marginBottom: 18, marginTop: 6 }}><span style={{ fontFamily: FONT_DISPLAY, color: p.color, fontSize: 11, fontWeight: 800, letterSpacing: 2.5 }}>{p.tier}</span></div>
+              <H3 style={{ fontSize: 17, marginBottom: 4 }}>{p.label}</H3>
+              <Body style={{ color: T.gray500, fontSize: 12, marginBottom: 24 }}>{p.desc}</Body>
+              {p.items.map(item => <div key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}><div style={{ width: 6, height: 6, borderRadius: 3, background: p.color, marginTop: 6, boxShadow: `0 0 6px ${p.color}40`, flexShrink: 0 }} /><span style={{ fontFamily: FONT_BODY, color: T.gray300, fontSize: 12, lineHeight: 1.5 }}>{item}</span></div>)}
+            </div></Reveal>
+          ))}
+        </div>
+      </SectionWrapper>
+      <SectionWrapper style={{ textAlign: "center", background: `linear-gradient(180deg, rgba(50,205,50,0.03), transparent)` }}><Reveal><H2 style={{ fontSize: 30, marginBottom: 10 }}>Se você quer escalar com estrutura, esse é o momento</H2><Body style={{ color: T.gray500, marginBottom: 28 }}>A entrada de novos parceiros é limitada e passa por um processo de avaliação.</Body><CTAButton>Quero me tornar parceiro FEX</CTAButton></Reveal></SectionWrapper>
+    </>
+  );
+};
+
+// ─── PAGE: CURSOS ──────────────────────────────────────
+
+const PageCursos = () => {
+  const [filter, setFilter] = useState("Todos");
+  const filters = ["Todos", "Graduação", "Pós-graduação", "MBA", "Extensão", "Inteligência Artificial"];
+  const courses = [
+    { name: "Gestão Comercial", cat: "Graduação" }, { name: "Liderança e Gestão de Pessoas", cat: "Pós-graduação", expert: "Expert Parceiro" },
+    { name: "Neuromarketing Aplicado", cat: "Pós-graduação", expert: "Expert Parceiro" }, { name: "IA para Negócios", cat: "Inteligência Artificial", expert: "Escola de IA" },
+    { name: "MBA em Gestão Estratégica", cat: "MBA", expert: "Expert Parceiro" }, { name: "Produtividade com IA", cat: "Extensão" },
+    { name: "Marketing Digital Avançado", cat: "Pós-graduação", expert: "Expert Parceiro" }, { name: "Automação com IA", cat: "Inteligência Artificial", expert: "Escola de IA" },
+    { name: "Estruturação de Negócios", cat: "MBA", expert: "Expert Parceiro" },
+  ];
+  const filtered = filter === "Todos" ? courses : courses.filter(c => c.cat === filter);
+  return (
+    <>
+      <HeroSimple tag="Catálogo" title="Explore os cursos da FEX Educação" subtitle="Formações desenvolvidas por especialistas e estruturadas com padrão acadêmico, organização e aplicação prática." />
+      <SectionWrapper>
+        <Reveal><WireframeNote style={{ marginBottom: 20 }}>Filtros de categoria — Essencial para UX</WireframeNote><div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 36 }}>{filters.map(f => <div key={f} className="fex-filter-chip" onClick={() => setFilter(f)} style={{ padding: "9px 20px", borderRadius: 100, cursor: "pointer", background: f === filter ? T.green : "transparent", color: f === filter ? "#000" : T.gray300, border: f === filter ? "none" : `1px solid ${T.glassBorder}`, fontFamily: FONT_BODY, fontSize: 13, fontWeight: 600, boxShadow: f === filter ? `0 0 16px ${T.greenGlow}` : "none" }}>{f}</div>)}</div></Reveal>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>{filtered.map((c, i) => <Reveal key={c.name} delay={i * 0.05}><Card style={{ cursor: "pointer" }}><div style={{ width: "100%", height: 130, borderRadius: T.radius, marginBottom: 18, background: `linear-gradient(135deg, ${T.gray800}, ${T.bg})`, border: `1px solid rgba(255,255,255,0.03)`, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 44, height: 44, borderRadius: 12, background: T.greenGlow, border: `1px solid ${T.glassBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="1.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div></div><Badge>{c.cat}</Badge><H3 style={{ fontSize: 17, marginTop: 12, marginBottom: 6 }}>{c.name}</H3>{c.expert && <Body style={{ color: T.gray500, fontSize: 12 }}>{c.expert}</Body>}<div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 6 }}><span style={{ fontFamily: FONT_BODY, color: T.green, fontSize: 13, fontWeight: 700 }}>Ver curso</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></Card></Reveal>)}</div>
+      </SectionWrapper>
+    </>
+  );
+};
+
+// ─── PAGE: ESCOLA DE IA ────────────────────────────────
+
+const PageEscolaIA = () => (
+  <>
+    <div style={{ minHeight: 560, display: "flex", alignItems: "center", background: T.bg, position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: -150, left: "50%", transform: "translateX(-50%)", width: 700, height: 700, borderRadius: "50%", background: `radial-gradient(circle, rgba(50,205,50,0.07), transparent 60%)`, filter: "blur(80px)", animation: "float 10s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", inset: 0, opacity: 0.025, backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`, backgroundSize: "48px 48px" }} />
+      <PageContainer><div style={{ textAlign: "center", position: "relative", zIndex: 2 }}>
+        <div style={{ animation: "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+          <SectionLabel>Escola de IA</SectionLabel>
+          <H1 style={{ margin: "18px auto 14px", maxWidth: 720, fontSize: 48 }}>Domine inteligência artificial e aplique no que realmente importa</H1>
+          <Body style={{ maxWidth: 560, margin: "0 auto 32px", fontSize: 16 }}>Uma pós-graduação para quem quer usar IA para crescer negócios e automatizar processos com estratégia.</Body>
+          <WireframeNote style={{ marginBottom: 28 }}>VSL é o elemento central — acima da dobra</WireframeNote>
+        </div>
+        <div style={{ maxWidth: 840, margin: "0 auto", animation: "fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both" }}><VideoPlaceholder label="VSL Principal — Elemento Central" large /></div>
+        <Body style={{ color: T.gray500, marginTop: 16, fontSize: 12 }}>Entenda em poucos minutos como a Escola de IA funciona.</Body>
+      </div></PageContainer>
+    </div>
+    <SectionWrapper><Reveal><SectionLabel>Contexto</SectionLabel><H2 style={{ fontSize: 30 }}>A maioria usa IA. Poucos sabem aplicar.</H2><GlowLine width={80} /><Body style={{ maxWidth: 640 }}>A inteligência artificial já faz parte da rotina de muitos profissionais e empresas. Mas, sem estrutura, ela vira apenas uma ferramenta pontual — e não um diferencial competitivo.</Body></Reveal></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Dupla Aplicação</SectionLabel><H2 style={{ fontSize: 26, marginBottom: 8 }}>Para indivíduos e empresas</H2><WireframeNote style={{ marginBottom: 20 }}>B2C + B2B lado a lado</WireframeNote></Reveal><div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>{[{ badge: "B2C", title: "Negócios e profissionais", text: "Use IA para produzir mais, estruturar melhor e crescer com mais eficiência." },{ badge: "B2B", title: "Empresas e equipes", text: "Aplique IA para automatizar processos, reduzir retrabalho e aumentar performance." }].map((item, i) => <Reveal key={item.badge} delay={i * 0.1}><Card style={{ borderColor: T.glassBorderHover }}><Badge>{item.badge}</Badge><H3 style={{ fontSize: 19, marginTop: 14, marginBottom: 10 }}>{item.title}</H3><Body>{item.text}</Body></Card></Reveal>)}</div></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Habilidades</SectionLabel><H2 style={{ fontSize: 26, marginBottom: 28 }}>O que você vai desenvolver</H2></Reveal><div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>{["Uso estratégico de IA", "Automação de tarefas", "Produção com IA", "Aplicação em negócios", "Estruturação de processos", "Criação de conteúdos", "Criação de vídeos com IA", "Automação de marketing"].map((s, i) => <Reveal key={s} delay={i * 0.04}><Card style={{ padding: 20 }}><div style={{ display: "flex", alignItems: "center", gap: 12 }}><div style={{ width: 6, height: 6, borderRadius: 3, background: T.green, boxShadow: `0 0 6px ${T.green}` }} /><span style={{ fontFamily: FONT_BODY, color: T.gray100, fontSize: 13, fontWeight: 500 }}>{s}</span></div></Card></Reveal>)}</div></SectionWrapper>
+    <SectionWrapper><Reveal><SectionLabel>Resultado</SectionLabel><H2 style={{ fontSize: 26, marginBottom: 28 }}>O que muda quando você domina IA</H2></Reveal><div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>{["Mais produtividade", "Mais velocidade", "Mais clareza", "Mais execução"].map((r, i) => <Reveal key={r} delay={i * 0.06}><div className="fex-card" style={{ padding: "28px 16px", borderRadius: T.radiusLg, textAlign: "center", background: T.greenGlow, border: `1px solid ${T.glassBorder}` }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="2" style={{ marginBottom: 10 }}><path d="M12 19V5M5 12l7-7 7 7"/></svg><span style={{ fontFamily: FONT_BODY, color: T.gray100, fontSize: 13, fontWeight: 700, display: "block" }}>{r}</span></div></Reveal>)}</div></SectionWrapper>
+    <SectionWrapper style={{ textAlign: "center", background: `linear-gradient(180deg, rgba(50,205,50,0.03), transparent)` }}><Reveal><H2 style={{ fontSize: 30, marginBottom: 28 }}>Se você quer usar IA de forma estratégica, esse é o próximo passo</H2><CTAButton>Quero entrar na Escola de IA</CTAButton></Reveal></SectionWrapper>
+  </>
+);
+
+// ─── PAGE: CONTEÚDOS ───────────────────────────────────
+
+const PageConteudos = () => (
+  <>
+    <HeroSimple tag="Conteúdos" title="Conheça a FEX através do conhecimento" subtitle="Artigos, podcasts, aparições na mídia e recursos para quem quer entender mais sobre educação, negócios e tecnologia." />
+    <SectionWrapper><div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>{[{ title: "Blog", desc: "Artigos sobre educação, negócios educacionais, IA e estratégias de crescimento." },{ title: "Na Mídia", desc: "Publicações, matérias e participações em veículos de comunicação." },{ title: "Podcast", desc: "Episódios sobre educação, negócios, carreira e inovação com especialistas." }].map((item, i) => <Reveal key={item.title} delay={i * 0.08}><Card style={{ cursor: "pointer", textAlign: "center", padding: 40 }}><div style={{ width: 56, height: 56, borderRadius: 16, background: T.greenGlow, border: `1px solid ${T.glassBorder}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", boxShadow: `0 0 20px ${T.greenGlow}` }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div><H3 style={{ fontSize: 20, marginBottom: 12 }}>{item.title}</H3><Body style={{ color: T.gray500, fontSize: 13 }}>{item.desc}</Body><div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><span style={{ fontFamily: FONT_BODY, color: T.green, fontSize: 13, fontWeight: 700 }}>Acessar</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div></Card></Reveal>)}</div></SectionWrapper>
+    <SectionDivider />
+    <SectionWrapper><div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>{[{ title: "Área do Aluno", desc: "Acesse conteúdos, acompanhe formações e gerencie sua jornada." },{ title: "Área do Parceiro", desc: "Gestão dos cursos, acompanhamento acadêmico e operação." }].map((item, i) => <Reveal key={item.title} delay={i * 0.08}><Card style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 24, padding: 32 }}><div style={{ width: 52, height: 52, borderRadius: 14, background: T.greenGlow, border: `1px solid ${T.glassBorder}`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 16px ${T.greenGlow}`, flexShrink: 0 }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg></div><div><H3 style={{ fontSize: 18, marginBottom: 8 }}>{item.title}</H3><Body style={{ color: T.gray500, fontSize: 13 }}>{item.desc}</Body></div></Card></Reveal>)}</div></SectionWrapper>
+  </>
+);
+
+// ─── REDIRECT PAGES ────────────────────────────────────
+
+const PageGraduacao = () => (<><HeroSimple tag="Graduação" title="Tecnólogo em Gestão Comercial" subtitle="Formação de nível superior reconhecida pelo MEC." cta="Acessar página do curso" /><SectionWrapper><Reveal><Card style={{ textAlign: "center", padding: 56 }}><WireframeNote>Redirecionamento para página existente</WireframeNote><Body style={{ marginTop: 20 }}>Redireciona para: <span style={{ color: T.green, fontWeight: 600 }}>tecnologo-gestao-comercial.fexeducacao.edu.br</span></Body></Card></Reveal></SectionWrapper></>);
+const PageMasterFex = () => (<><HeroSimple tag="MasterFEX" title="MasterFEX" subtitle="Programa exclusivo da FEX Educação para experts que querem elevar seu posicionamento." /><SectionWrapper><Reveal><Card style={{ textAlign: "center", padding: 56 }}><WireframeNote>Redirecionamento para página existente do MasterFEX</WireframeNote><Body style={{ marginTop: 20 }}>Redireciona para a landing page já existente do MasterFEX.</Body></Card></Reveal></SectionWrapper></>);
+
+// ─── MAIN APP ──────────────────────────────────────────
+
+const PAGES = {
+  "home": { component: PageHome, label: "Home" },
+  "a-fex": { component: PageAFex, label: "A FEX" },
+  "pos-graduacao": { component: PagePos, label: "Pós-graduação" },
+  "mba": { component: PageMBA, label: "MBA" },
+  "extensao": { component: PageExtensao, label: "Extensão" },
+  "mentorias": { component: PageMentorias, label: "Mentorias" },
+  "masterfex": { component: PageMasterFex, label: "MasterFEX" },
+  "graduacao": { component: PageGraduacao, label: "Graduação" },
+  "universidade-corporativa": { component: PageUniCorp, label: "Uni. Corporativa" },
+  "consultoria": { component: PageConsultoria, label: "Consultoria" },
+  "parceiros": { component: PageParceiros, label: "Parceiros" },
+  "cursos": { component: PageCursos, label: "Cursos" },
+  "escola-ia": { component: PageEscolaIA, label: "Escola de IA" },
+  "conteudos": { component: PageConteudos, label: "Conteúdos" },
+};
+
+function App() {
+  const [currentPage, setCurrentPage] = useState("home");
+  const mainRef = useRef(null);
+  useEffect(() => { if (mainRef.current) mainRef.current.scrollTo({ top: 0, behavior: "instant" }); }, [currentPage]);
+  const PageComponent = PAGES[currentPage]?.component || PageHome;
+
+  return (
+    <div style={{ width: "100%", height: "100vh", display: "flex", flexDirection: "column", background: T.bg, fontFamily: FONT_BODY, color: T.white, overflow: "hidden" }}>
+      <GlobalStyles />
+      <GrainOverlay />
+      <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <div style={{ background: T.gray900, borderBottom: `1px solid rgba(255,255,255,0.04)`, padding: "10px 40px", overflowX: "auto", display: "flex", gap: 4, flexShrink: 0, alignItems: "center" }}>
+        <span style={{ fontFamily: FONT_DISPLAY, color: T.gray600, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, padding: "6px 12px", whiteSpace: "nowrap" }}>Wireframe</span>
+        <div style={{ width: 1, height: 16, background: T.gray700, margin: "0 8px" }} />
+        {Object.entries(PAGES).map(([key, val]) => <div key={key} onClick={() => setCurrentPage(key)} className="fex-filter-chip" style={{ padding: "6px 14px", borderRadius: 6, cursor: "pointer", background: currentPage === key ? T.greenGlow : "transparent", color: currentPage === key ? T.green : T.gray500, fontFamily: FONT_BODY, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", border: currentPage === key ? `1px solid ${T.glassBorder}` : "1px solid transparent" }}>{val.label}</div>)}
+      </div>
+      <main ref={mainRef} style={{ flex: 1, overflowY: "auto", position: "relative" }}>
+        <PageComponent />
+        <Footer />
+      </main>
+    </div>
+  );
+}
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
